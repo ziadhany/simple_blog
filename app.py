@@ -41,19 +41,26 @@ def logout():
 
 @app.route('/login')
 def login():
-    return 'Login'
+    return render_template('login.html')
 
 
-@app.route('/create', methods=['POST'])
+@app.route('/sign_up')
+def sign_up():
+    return render_template('sign_up.html')
+
+
+@app.route('/create', methods=['POST', 'GET'])
 def create():
-    title = request.form['title']
-    body = request.form['body']
+    if request.method == 'POST':
+        title = request.form['title']
+        body = request.form['body']
 
-    new_post = Post(title=title, body=body)
-    db.session.add(new_post)
-    db.session.commit()
-
-    return redirect('/')
+        new_post = Post(title=title, body=body)
+        db.session.add(new_post)
+        db.session.commit()
+        return redirect('/create')
+    elif request.method == 'GET':
+        return render_template('create.html')
 
 
 @app.errorhandler(404)

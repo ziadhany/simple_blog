@@ -1,10 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block body %}
+<form style="margin: auto;max-width: 40%;padding-top: 60px;">
+  <div class="form-outline mb-4">
+      <label class="form-label" for="form2Example1">Username</label>
+    <input type="text" id="form2Example1" class="form-control" />
 
-</body>
-</html>
+  </div>
+
+  <div class="form-outline mb-4">
+     <label class="form-label" for="form2Example2">Password</label>
+    <input type="password" id="form2Example2" class="form-control" />
+  </div>
+
+  <button type="button" class="btn btn-primary btn-block mb-4">Sign in</button>
+
+  <div class="text-center">
+    <p>Not a member? <a href="/sign_up">Register</a></p>
+  </div>
+</form>
+{% endblock %}
