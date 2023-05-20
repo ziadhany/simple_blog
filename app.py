@@ -1,66 +1,126 @@
-from flask import Flask, render_template, redirect, request
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, render_template, redirect, request, session
+import hashlib
+import binascii
+from pymongo import MongoClient
+import os
+from datetime import datetime
+from bson.objectid import ObjectId
+import markdown
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
-db = SQLAlchemy(app)
+app.secret_key = '1500589d2e714969087988503480f9cbdc34a3d2e1eec7bd4b50da1925763528'
+
+IS_SQL_DATABASE = False
+
+if IS_SQL_DATABASE:
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
+
+else:
+    client = MongoClient('localhost', 27017)
+    db = client['blog']
 
 
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(30), unique=True, nullable=False)
-    password = db.Column(db.String(30), nullable=False)
+def hash_password(password):
+    salt = hashlib.sha256(os.urandom(60)).hexdigest().encode('ascii')
+    pwdhash = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'),
+                                  salt, 200000)
+    pwdhash = binascii.hexlify(pwdhash)
+    return (salt + pwdhash).decode('ascii')
 
 
-class Post(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    title = db.Column(db.String(100))
-    body = db.Column(db.Text)
-    created_at = db.Column(db.DateTime)
-    updated_at = db.Column(db.DateTime)
-
-    def __repr__(self):
-        return f'<Post {self.title}>'
-
-
-with app.app_context():
-    db.create_all()
+def verify_password(stored_password, provided_password):
+    salt = stored_password[:64]
+    pwdhash = hashlib.pbkdf2_hmac('sha512',
+                                  provided_password.encode('utf-8'),
+                                  salt.encode('ascii'),
+                                  200000)
+    stored_password = stored_password[64:]
+    pwdhash = binascii.hexlify(pwdhash).decode('ascii')
+    return pwdhash == stored_password
 
 
 @app.route('/')
 def index():
-    posts = Post.query.all()
+    if IS_SQL_DATABASE:
+        posts = Post.query.all()
+    else:
+        posts = db.posts.find()
     return render_template('index.html', posts=posts)
 
 
-@app.route('/logout')
-def logout():
-    return 'Logout'
+@app.route('/post/<id>', methods=['GET'])
+def post(id):
+    if IS_SQL_DATABASE:
+        pass
+    else:
+        post = db.posts.find_one(ObjectId(id))
+        post['body'] = markdown.markdown(post['body'])
+    return render_template('post.html', post=post)
 
 
-@app.route('/login')
-def login():
-    return render_template('login.html')
-
-
-@app.route('/sign_up')
-def sign_up():
-    return render_template('sign_up.html')
-
-
+# @login_required
 @app.route('/create', methods=['POST', 'GET'])
 def create():
     if request.method == 'POST':
         title = request.form['title']
         body = request.form['body']
+        if IS_SQL_DATABASE:
+            pass
+        else:
+            posts = db.posts.insert_one({
+                "author": session['username'],
+                "title": title,
+                "body": body,
+                "created_at": datetime.now(),
+                "updated_at": datetime.now(),
+            })
 
-        new_post = Post(title=title, body=body)
-        db.session.add(new_post)
-        db.session.commit()
         return redirect('/create')
-    elif request.method == 'GET':
+    else:
         return render_template('create.html')
+
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect('/')
+
+
+@app.route('/login', methods=['POST', 'GET'])
+def login():
+    if request.method == 'GET':
+        return render_template('login.html')
+
+    elif request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        if IS_SQL_DATABASE:
+            pass
+        else:
+            stored_user = db.users.find_one({"username": username})
+            if verify_password(stored_user['password'], password):
+                session['logged_in'] = True
+                session['username'] = username
+            return redirect("/create")
+
+
+@app.route('/sign_up', methods=['POST', 'GET'])
+def sign_up():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        if IS_SQL_DATABASE:
+            pass
+        else:
+            user = db.users.insert_one({
+                "username": username,
+                "password": hash_password(password),
+            })
+
+        return redirect('/login')
+
+    else:
+        return render_template('sign_up.html')
 
 
 @app.errorhandler(404)
