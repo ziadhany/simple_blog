@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 {% block body %}
 <form style="margin: auto;max-width: 40%;padding-top: 60px;" method="POST" action="/create">
+{% if message %}
+      <div class="alert alert-success" role="alert">{{message}}</div>
+{% endif %}
 <div class="mb-3">
   <label for="exampleFormControlInput1" class="form-label">Title</label>
   <input type="text" class="form-control" id="exampleFormControlInput1" placeholder="Hello"

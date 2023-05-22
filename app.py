@@ -6,15 +6,26 @@ import os
 from datetime import datetime
 from bson.objectid import ObjectId
 import markdown
+import sqlite3
+from utils import get_user_by_email
+from utils import add_user
+from utils import check_email
+from utils import is_valid_email
+from utils import make_post
+from utils import get_posts
+from utils import get_post
+from utils import get_user_id
+import utils
 
 app = Flask(__name__)
 app.secret_key = '1500589d2e714969087988503480f9cbdc34a3d2e1eec7bd4b50da1925763528'
 
-IS_SQL_DATABASE = False
+IS_SQL_DATABASE = True
+POSTS_LIMIT = 10
 
 if IS_SQL_DATABASE:
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
-
+    conn = sqlite3.connect('instance/blog.sqlite', check_same_thread=False)
+    utils.cursor = conn.cursor()
 else:
     client = MongoClient('localhost', 27017)
     db = client['blog']
@@ -41,20 +52,22 @@ def verify_password(stored_password, provided_password):
 
 @app.route('/')
 def index():
+    posts = []
     if IS_SQL_DATABASE:
-        posts = Post.query.all()
+        posts = get_posts()
     else:
-        posts = db.posts.find()
+        posts = db.posts.find({}, {"author": 1, "title": 1}).limit(POSTS_LIMIT)
     return render_template('index.html', posts=posts)
 
 
 @app.route('/post/<id>', methods=['GET'])
 def post(id):
     if IS_SQL_DATABASE:
-        pass
+        post = get_post(id)
     else:
         post = db.posts.find_one(ObjectId(id))
-        post['body'] = markdown.markdown(post['body'])
+
+    post['body'] = markdown.markdown(post['body'])
     return render_template('post.html', post=post)
 
 
@@ -65,7 +78,9 @@ def create():
         title = request.form['title']
         body = request.form['body']
         if IS_SQL_DATABASE:
-            pass
+            author_id = get_user_id(session['username'])
+            make_post(title, body, author_id)
+            conn.commit()
         else:
             posts = db.posts.insert_one({
                 "author": session['username'],
@@ -75,7 +90,7 @@ def create():
                 "updated_at": datetime.now(),
             })
 
-        return redirect('/create')
+        return render_template('create.html', message="Created Successfully")
     else:
         return render_template('create.html')
 
@@ -92,28 +107,43 @@ def login():
         return render_template('login.html')
 
     elif request.method == 'POST':
-        username = request.form['username']
+        email = request.form['email']
         password = request.form['password']
+
         if IS_SQL_DATABASE:
-            pass
+            stored_user = get_user_by_email(email)
+            stored_username = stored_user[1] if stored_user else ""
+            stored_password = stored_user[3] if stored_user else ""
+
         else:
-            stored_user = db.users.find_one({"username": username})
-            if verify_password(stored_user['password'], password):
-                session['logged_in'] = True
-                session['username'] = username
-            return redirect("/create")
+            stored_user = db.users.find_one({"email": email})
+            stored_username = stored_user['username']
+            stored_password = stored_user['password']
+
+        if verify_password(stored_password, password):
+            session['username'] = stored_username
+            return redirect("/")
+        else:
+            return render_template('login.html', message="login Failed")
 
 
 @app.route('/sign_up', methods=['POST', 'GET'])
 def sign_up():
     if request.method == 'POST':
         username = request.form['username']
+        email = request.form['email']
         password = request.form['password']
+
+        if not is_valid_email(email) and check_email(email):
+            return redirect('/login')
+
         if IS_SQL_DATABASE:
-            pass
+            add_user(username, email, hash_password(password))
+            conn.commit()
         else:
             user = db.users.insert_one({
                 "username": username,
+                "email": email,
                 "password": hash_password(password),
             })
 

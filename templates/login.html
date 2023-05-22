@@ -1,9 +1,10 @@
 {% extends "base.html" %}
 {% block body %}
+
 <form style="margin: auto;max-width: 40%;padding-top: 60px;" action="/login" method="POST" >
   <div class="form-outline mb-4">
-      <label class="form-label" for="form2Example1">Username</label>
-    <input type="text" id="form2Example1" class="form-control" name="username"/>
+      <label class="form-label" for="form2Example1">Email</label>
+    <input type="text" id="form2Example1" class="form-control" name="email"/>
 
   </div>
 
@@ -16,6 +17,11 @@
 
   <div class="text-center">
     <p>Not a member? <a href="/sign_up">Register</a></p>
+
+    {% if message %}
+      <div class="alert alert-danger" role="alert">{{message}}</div>
+    {% endif %}
+
   </div>
 </form>
 {% endblock %}
