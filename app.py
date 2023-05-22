@@ -7,15 +7,9 @@ from datetime import datetime
 from bson.objectid import ObjectId
 import markdown
 import sqlite3
-from utils import get_user_by_email
-from utils import add_user
-from utils import check_email
-from utils import is_valid_email
-from utils import make_post
-from utils import get_posts
-from utils import get_post
-from utils import get_user_id
+from utils import *
 import utils
+
 
 app = Flask(__name__)
 app.secret_key = '1500589d2e714969087988503480f9cbdc34a3d2e1eec7bd4b50da1925763528'
@@ -29,6 +23,7 @@ if IS_SQL_DATABASE:
 else:
     client = MongoClient('localhost', 27017)
     db = client['blog']
+    utils.db = client['blog']
 
 
 def hash_password(password):
@@ -79,7 +74,7 @@ def create():
         body = request.form['body']
         if IS_SQL_DATABASE:
             author_id = get_user_id(session['username'])
-            make_post(title, body, author_id)
+            create_post(title, body, author_id)
             conn.commit()
         else:
             posts = db.posts.insert_one({

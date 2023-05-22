@@ -7,6 +7,7 @@ def check_email(email):
     :param email:
     :return:
     """
+    global cursor
     cursor.execute("SELECT * FROM user WHERE email = ?", (email,))
     if cursor.fetchone():
         return True
@@ -71,7 +72,7 @@ def add_user(name, email, password):
     cursor.execute("INSERT INTO user (name , email , password) VALUES (? , ? , ?)", (name, email, password))
 
 
-def make_post(title, body, user_id):
+def create_post(title, body, user_id):
     """
     :param title:
     :param body:
@@ -109,14 +110,29 @@ def get_post(post_id):
             "author": author[0]
             }
 
-# def change_name(email, password, new_name):
-#     user = getUser(email, password)
-#
-#     if user is None:
-#         return False
-#     try:
-#         cursor.execute("UPDATE user SET name = ? WHERE email =? and password = ? ", (new_name, email, password,))
-#         conn.commit()
-#     except:
-#         return False
-#     return True
+
+def update_post(id, title, body):
+    if IS_SQL_DATABASE:
+        # TODO implement update post function using a sql command
+        pass
+    else:
+        # TODO implement update post function using a mongodb
+        pass
+
+
+def delete_post(id):
+    if IS_SQL_DATABASE:
+        # TODO implement delete post function using a sql command
+        pass
+    else:
+        # TODO implement delete post function using a mongodb
+        pass
+
+
+def create_comment(post_id, username, body):
+    if IS_SQL_DATABASE:
+        # TODO implement create comment function using a sql command
+        pass
+    else:
+        # TODO implement create comment function using a mongodb
+        pass
