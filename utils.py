@@ -112,7 +112,7 @@ def get_post(post_id):
 
 
 def update_post(post_id, title, body):
-    if IS_SQL_DATABASE:
+    if app.IS_SQL_DATABASE:
         global cursor
         cursor.execute("UPDATE post Set (title, body,id) VALUES (?, ?,? )", (title, body,post_id))
         pass
@@ -123,7 +123,7 @@ def update_post(post_id, title, body):
 
 
 def delete_post(post_id):
-    if IS_SQL_DATABASE:
+    if app.IS_SQL_DATABASE:
        global cursor
        cursor.execute("DELETE FROM post WHERE id = ?" , (post_id,))
     else:
@@ -132,9 +132,9 @@ def delete_post(post_id):
 
 
 def create_comment(post_id, user_id, body):
-    if IS_SQL_DATABASE:
+    if app.IS_SQL_DATABASE:
         global cursor
-        cursor.execute("INSERT INTO comment (body)   VALUES (?) Where user_id = ? and post_id =?", (name, email, password))
+        cursor.execute("INSERT INTO comment (post_id, user_id, body) VALUES (?, (SELECT id FROM user WHERE name = ?), ?)", (post_id, user_id, body))
     else:
         # TODO implement delete post function using a mongodb
         pass
