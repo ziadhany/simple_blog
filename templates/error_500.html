@@ -1,10 +1,58 @@
-<!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+<style>
+body {
+  background-color: white;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 24px;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+h1 {
+  color: black;
+  text-align: center;
+}
+
+p {
+  color: gray;
+  text-align: center;
+}
+
+button {
+  display: block;
+  margin: 0 auto;
+  padding: 20px 40px;
+  background-color: black;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: gray;
+}
+
+img { /* added this block */
+  width: 300px;
+  height: auto;
+}
+</style>
 </head>
 <body>
+
+<div class="container">
+<h1>Uh-oh!</h1>
+<p>Internal Server Error 500</p>
+
+<button onclick="window.location.href='/';">Go back home</button>
+</div>
 
 </body>
 </html>
