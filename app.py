@@ -10,7 +10,6 @@ import sqlite3
 from utils import *
 import utils
 
-
 app = Flask(__name__)
 app.secret_key = '1500589d2e714969087988503480f9cbdc34a3d2e1eec7bd4b50da1925763528'
 
@@ -55,6 +54,7 @@ def index():
     return render_template('index.html', posts=posts)
 
 
+@app.route('/post/<id>/comment', methods=['POST'])
 @app.route('/post/<id>', methods=['GET', 'POST'])
 def post(id):
     if request.method == 'GET':
@@ -69,7 +69,6 @@ def post(id):
         comments = []
         if IS_SQL_DATABASE:
             comments = get_comments(id)
-            print(comments)
         else:
             comments = db.comments.find({"post_id": id})
 
@@ -79,7 +78,7 @@ def post(id):
         if 'username' not in session:
             return redirect('/login')
 
-        author = request.form['author']
+        author = session['username']
         content = request.form['content']
 
         if IS_SQL_DATABASE:
@@ -93,23 +92,7 @@ def post(id):
                 "created_at": datetime.now(),
             })
 
-        return redirect('/post/{}'.format(id))
-
-
-@app.route('/post/<id>/comment', methods=['POST'])
-def comment(id):
-    if request.method == 'POST':
-        if 'username' not in session:
-            return redirect('/login')
-        author = request.form['author']
-        content = request.form['content']
-        if IS_SQL_DATABASE:
-            create_comment(id, author, content)
-            conn.commit()
-        else:
-            # TODO: Implement create comment function using MongoDB
-            pass
-    return redirect('/post/' + id)
+        return redirect('/post/' + id)
 
 
 # @login_required
