@@ -26,10 +26,10 @@
       {% for comment in comments %}
         <div class="card mb-3">
           <div class="card-body">
-            <h6 class="card-title">@{{ comment["author"] }}</h6>
-            <p class="card-text">{{ comment["content"] }}</p>
+            <h6 class="card-title">@{{ comment[0] }}</h6>
+            <p class="card-text">{{ comment[1] }}</p>
             <p class="card-text">
-              <small class="text-muted">Posted on: {{ comment["created_at"] }}</small>
+              <small class="text-muted">Posted on: {{ comment[2] }}</small>
             </p>
           </div>
         </div>

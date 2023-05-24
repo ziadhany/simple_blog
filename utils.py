@@ -141,11 +141,20 @@ def delete_post(id):
 def create_comment(post_id, username, body):
     if app.IS_SQL_DATABASE:
         try:
-            cursor.execute("INSERTE INTO comment (post_id , user_id , body) VALUES (? , (SELECT id FROM user where name = ?) , ?)" , (post_id,username , body))
+            cursor.execute("INSERT INTO comment (post_id, user_id, body) VALUES (?, (SELECT id FROM user WHERE name = ?), ?)", (post_id, username, body))
             return True
         except:
             return False
-
     else:
-        # TODO implement create comment function using a mongodb
+        # TODO: Implement create comment function using MongoDB
+        pass
+
+def get_comments(post_id):
+    if app.IS_SQL_DATABASE:
+        try:
+            cursor.execute("SELECT name , body , comment.created_at FROM comment LEFT JOIN user on user.id = user_id WHERE post_id = ?", (post_id,))
+            return cursor.fetchall()
+        except:
+            return None
+    else:
         pass

@@ -55,21 +55,69 @@ def index():
     return render_template('index.html', posts=posts)
 
 
-@app.route('/post/<id>', methods=['GET'])
+@app.route('/post/<id>', methods=['GET', 'POST'])
 def post(id):
-    if IS_SQL_DATABASE:
-        post = get_post(id)
-    else:
-        post = db.posts.find_one(ObjectId(id))
+    if request.method == 'GET':
+        if IS_SQL_DATABASE:
+            post = get_post(id)
+        else:
+            post = db.posts.find_one(ObjectId(id))
 
-    post['body'] = markdown.markdown(post['body'])
-    return render_template('post.html', post=post)
+        post['body'] = markdown.markdown(post['body'])
+
+        # Get comments for the post
+        comments = []
+        if IS_SQL_DATABASE:
+            comments = get_comments(id)
+            print(comments)
+        else:
+            comments = db.comments.find({"post_id": id})
+
+        return render_template('post.html', post=post, comments=comments)
+
+    elif request.method == 'POST':
+        if 'username' not in session:
+            return redirect('/login')
+
+        author = request.form['author']
+        content = request.form['content']
+
+        if IS_SQL_DATABASE:
+            create_comment(id, author, content)
+            conn.commit()
+        else:
+            db.comments.insert_one({
+                "post_id": id,
+                "author": author,
+                "content": content,
+                "created_at": datetime.now(),
+            })
+
+        return redirect('/post/{}'.format(id))
+
+
+@app.route('/post/<id>/comment', methods=['POST'])
+def comment(id):
+    if request.method == 'POST':
+        if 'username' not in session:
+            return redirect('/login')
+        author = request.form['author']
+        content = request.form['content']
+        if IS_SQL_DATABASE:
+            create_comment(id, author, content)
+            conn.commit()
+        else:
+            # TODO: Implement create comment function using MongoDB
+            pass
+    return redirect('/post/' + id)
 
 
 # @login_required
 @app.route('/create', methods=['POST', 'GET'])
 def create():
     if request.method == 'POST':
+        if 'username' not in session:
+            return redirect('/login')
         title = request.form['title']
         body = request.form['body']
         if IS_SQL_DATABASE:
