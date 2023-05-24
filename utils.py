@@ -111,42 +111,32 @@ def get_post(post_id):
             }
 
 
-def update_post(id, title, body):
-    if app.IS_SQL_DATABASE:
-
-        try:
-            cursor.execute("UPDATE post SET title = ? , body = ? WHERE id = ?" , (title, body , id))
-            return True
-        except:
-            return False
+def update_post(post_id, title, body):
+    if IS_SQL_DATABASE:
+        global cursor
+        cursor.execute("UPDATE post Set (title, body,id) VALUES (?, ?,? )", (title, body,post_id))
         pass
     else:
         # TODO implement update post function using a mongodb
         pass
 
 
-def delete_post(id):
-    if app.IS_SQL_DATABASE:
-        try:
-            cursor.execute("DELETE FROM post WHERE id = ?" , (id,))
-            return True
-        except:
-            return False
 
+def delete_post(post_id):
+    if IS_SQL_DATABASE:
+       global cursor
+       cursor.execute("DELETE FROM post WHERE id = ?" , (post_id,))
     else:
         # TODO implement delete post function using a mongodb
         pass
 
 
-def create_comment(post_id, username, body):
-    if app.IS_SQL_DATABASE:
-        try:
-            cursor.execute("INSERT INTO comment (post_id, user_id, body) VALUES (?, (SELECT id FROM user WHERE name = ?), ?)", (post_id, username, body))
-            return True
-        except:
-            return False
+def create_comment(post_id, user_id, body):
+    if IS_SQL_DATABASE:
+        global cursor
+        cursor.execute("INSERT INTO comment (body)   VALUES (?) Where user_id = ? and post_id =?", (name, email, password))
     else:
-        # TODO: Implement create comment function using MongoDB
+        # TODO implement delete post function using a mongodb
         pass
 
 def get_comments(post_id):
