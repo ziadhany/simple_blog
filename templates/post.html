@@ -8,11 +8,51 @@
   <div class="card-body">
     <blockquote class="blockquote mb-0">
       <p>{{ post["title"] }}</p>
-      <h5>{{ post["body"] |safe }}</h5>
+      <h5>{{ post["body"] | safe }}</h5>
       <br>
-      <p class="blockquote-footer">updated_at :{{ post["updated_at"] }}</p>
-      <p class="blockquote-footer">created_at :{{ post["created_at"] }}</p>
+      <p class="blockquote-footer">updated_at: {{ post["updated_at"] }}</p>
+      <p class="blockquote-footer">created_at: {{ post["created_at"] }}</p>
     </blockquote>
+  </div>
+</div>
+
+<!-- Comment Section -->
+<div class="card mt-4">
+  <div class="card-header">
+    Comments
+  </div>
+  <div class="card-body">
+    {% if comments %}
+      {% for comment in comments %}
+        <div class="card mb-3">
+          <div class="card-body">
+            <h6 class="card-title">@{{ comment[0] }}</h6>
+            <p class="card-text">{{ comment[1] }}</p>
+            <p class="card-text">
+              <small class="text-muted">Posted on: {{ comment[2] }}</small>
+            </p>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p>No comments yet.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Comment Form -->
+<div class="card mt-4">
+  <div class="card-header">
+    Add a Comment
+  </div>
+  <div class="card-body">
+    <form action="/post/{{ post["_id"] }}/comment" method="POST">
+      <div class="form-group">
+        <label for="content">Comment</label>
+        <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
   </div>
 </div>
 {% endblock %}

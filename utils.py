@@ -121,11 +121,11 @@ def update_post(post_id, title, body):
         pass
 
 
+
 def delete_post(post_id):
     if IS_SQL_DATABASE:
        global cursor
        cursor.execute("DELETE FROM post WHERE id = ?" , (post_id,))
-        pass
     else:
         # TODO implement delete post function using a mongodb
         pass
@@ -135,7 +135,16 @@ def create_comment(post_id, user_id, body):
     if IS_SQL_DATABASE:
         global cursor
         cursor.execute("INSERT INTO comment (body)   VALUES (?) Where user_id = ? and post_id =?", (name, email, password))
-        pass
     else:
-        # TODO implement create comment function using a mongodb
+        # TODO implement delete post function using a mongodb
+        pass
+
+def get_comments(post_id):
+    if app.IS_SQL_DATABASE:
+        try:
+            cursor.execute("SELECT name , body , comment.created_at FROM comment LEFT JOIN user on user.id = user_id WHERE post_id = ?", (post_id,))
+            return cursor.fetchall()
+        except:
+            return None
+    else:
         pass
