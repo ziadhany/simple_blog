@@ -77,7 +77,7 @@ def create_comment(id):
     return redirect('/post/' + id)
 
 
-@app.route('/create', methods=['POST', 'GET'])
+@app.route('/post/create', methods=['POST', 'GET'])
 @login_required
 def create():
     """
@@ -120,7 +120,6 @@ def sign_up():
 
         if username and password:
             utils.add_user(username, email, hash_password(password))
-            return render_template('sign_up.html')
 
         return redirect('/login')
 
@@ -128,20 +127,33 @@ def sign_up():
         return render_template('sign_up.html')
 
 
-@app.route('/post/<id>', methods=['DELETE'])
+@app.route('/post/<post_id>/delete', methods=['POST'])
 @login_required
 def delete_post(post_id):
     post = utils.get_post(post_id)
     if post["author"] != session["username"]:
         abort(403)
     else:
-        utils.delete_post()
+        utils.delete_post(post_id)
+    return redirect("/")
 
 
-@app.route('/sign_up', methods=['DELETE'])
+@app.route('/post/<post_id>/update', methods=['POST', 'GET'])
 @login_required
-def delete_comment(comment):
-    pass
+def update_post(post_id):
+    post = utils.get_post(post_id)
+    if request.method == 'POST':
+        title = request.form['title']
+        body = request.form['body']
+
+        if post["author"] != session["username"]:
+            abort(403)
+        else:
+            utils.update_post(post_id, title, body)
+        return redirect(f"/post/{post_id}")
+    else:
+        return render_template('post_edit.html', post=post)
+
 
 
 @app.route('/logout')
@@ -154,7 +166,7 @@ def logout():
 
 
 @app.errorhandler(404)
-def not_found(error):
+def errorhandler_404(error):
     """
     :param error:
     :return:
@@ -163,7 +175,7 @@ def not_found(error):
 
 
 @app.errorhandler(500)
-def not_found(error):
+def errorhandler_500(error):
     """
     :param error:
     :return:

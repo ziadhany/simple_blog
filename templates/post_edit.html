@@ -1,20 +1,20 @@
 {% extends "base.html" %}
 {% block body %}
-<form style="margin: auto;max-width: 40%;padding-top: 60px;" method="POST" action="/post/create">
+<form style="margin: auto;max-width: 40%;padding-top: 60px;" method="POST" action="/post/{{ post["_id"] }}/update">
 {% if message %}
       <div class="alert alert-success" role="alert">{{message}}</div>
 {% endif %}
 <div class="mb-3">
   <label for="exampleFormControlInput1" class="form-label">Title</label>
   <input type="text" class="form-control" id="exampleFormControlInput1" placeholder="Hello"
-  name="title">
+  name="title" value="{{ post["title"] }}">
 </div>
 <div class="mb-3">
   <label for="exampleFormControlTextarea1" class="form-label">Example textarea</label>
-  <textarea class="form-control" id="exampleFormControlTextarea1" rows="5" name="body"></textarea>
+  <textarea class="form-control" id="exampleFormControlTextarea1" rows="5" name="body">
+    {{ post["body"] }}
+  </textarea>
 </div>
-
   <button type="submit" class="btn btn-primary btn-block mb-4">Submit</button>
-
 </form>
 {% endblock %}

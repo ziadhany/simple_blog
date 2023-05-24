@@ -162,38 +162,37 @@ def create_post(title, body, username):
 
 def update_post(post_id, title, body):
     if app.IS_SQL_DATABASE:
-        app.cursor.execute("UPDATE post Set (title, body, id) VALUES (?, ?,? )", (title, body, post_id))
-        pass
+        app.cursor.execute("UPDATE post SET title=?, body =? WHERE id = ?", (title, body, post_id))
+        app.conn.commit()
     else:
-        # TODO implement update post function using a mongodb
-        pass
+        app.db.posts.update_one({{"_id": post_id}}, {"$set": {"title": title,
+                                                              "body": body, }})
 
 
 def delete_post(post_id):
     if app.IS_SQL_DATABASE:
+        app.cursor.execute("DELETE FROM comment WHERE post_id = ?", (post_id,))
         app.cursor.execute("DELETE FROM post WHERE id = ?", (post_id,))
-    else:
-        app.db.posts.remove({"_id": post_id})
-
-
-def create_comment(post_id, author, body):
-    created_at = datetime.now()
-    if app.IS_SQL_DATABASE:
-        user_id = get_user_id(author)
-
-        app.cursor.execute("INSERT INTO comment (body, created_at, user_id, post_id)"
-                           "VALUES (?,?,?,?)",
-                           (body, created_at, user_id, post_id))
         app.conn.commit()
-
     else:
-        # FIXME
-        db.comments.insert_one({
-            "post_id": post_id,
-            "author": author,
-            "content": content,
-            "created_at": created_at,
-        })
+        app.db.posts.delete_one({"_id": post_id})
+
+
+# def create_comment(post_id, author, body):
+#     created_at = datetime.now()
+#     if app.IS_SQL_DATABASE:
+#         user_id = get_user_id(author)
+#
+#         app.cursor.execute("INSERT INTO comment (body, created_at, user_id, post_id)"
+#                            "VALUES (?,?,?,?)",
+#                            (body, created_at, user_id, post_id))
+#         app.conn.commit()
+#
+#     else:
+#         db.posts.update_one({"post_id": post_id}, {'$push': {'comment': {
+#             "body": body,
+#             "created_at": created_at,
+#         }}})
 
 
 def import_posts_from_csv_file():
