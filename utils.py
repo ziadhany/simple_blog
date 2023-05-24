@@ -112,8 +112,13 @@ def get_post(post_id):
 
 
 def update_post(id, title, body):
-    if IS_SQL_DATABASE:
-        # TODO implement update post function using a sql command
+    if app.IS_SQL_DATABASE:
+
+        try:
+            cursor.execute("UPDATE post SET title = ? , body = ? WHERE id = ?" , (title, body , id))
+            return True
+        except:
+            return False
         pass
     else:
         # TODO implement update post function using a mongodb
@@ -121,18 +126,26 @@ def update_post(id, title, body):
 
 
 def delete_post(id):
-    if IS_SQL_DATABASE:
-        # TODO implement delete post function using a sql command
-        pass
+    if app.IS_SQL_DATABASE:
+        try:
+            cursor.execute("DELETE FROM post WHERE id = ?" , (id,))
+            return True
+        except:
+            return False
+
     else:
         # TODO implement delete post function using a mongodb
         pass
 
 
 def create_comment(post_id, username, body):
-    if IS_SQL_DATABASE:
-        # TODO implement create comment function using a sql command
-        pass
+    if app.IS_SQL_DATABASE:
+        try:
+            cursor.execute("INSERTE INTO comment (post_id , user_id , body) VALUES (? , (SELECT id FROM user where name = ?) , ?)" , (post_id,username , body))
+            return True
+        except:
+            return False
+
     else:
         # TODO implement create comment function using a mongodb
         pass
