@@ -40,12 +40,12 @@
     {% if comments %}
       {% for comment in comments %}
         <div class="card mb-3">
-                    <button type="button" class="btn-close" aria-label="Close"></button>
+         <button type="button" class="btn-close" aria-label="Close"></button>
           <div class="card-body">
-            <h6 class="card-title">@{{ comment[0] }}</h6>
-            <p class="card-text">{{ comment[1] }}</p>
+            <h6 class="card-title">@{{ comment["author"] }}</h6>
+            <p class="card-text">{{ comment["body"] }}</p>
             <p class="card-text">
-              <small class="text-muted">Posted on: {{ comment[2] }}</small>
+              <small class="text-muted">Posted on: {{ comment["created_at"] }}</small>
             </p>
           </div>
 
@@ -69,8 +69,6 @@
         <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
       </div>
           <br>
-    </form>
-    <form>
       <button type="submit" class="btn btn-primary">Submit</button>
     </form>
   </div>

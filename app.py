@@ -11,7 +11,7 @@ from functools import wraps
 app = Flask(__name__)
 app.secret_key = '1500589d2e714969087988503480f9cbdc34a3d2e1eec7bd4b50da1925763528'
 
-IS_SQL_DATABASE = True
+IS_SQL_DATABASE = False
 
 if IS_SQL_DATABASE:
     conn = sqlite3.connect('instance/blog.sqlite', check_same_thread=False)
@@ -56,25 +56,26 @@ def index():
     return render_template('index.html', posts=posts)
 
 
-@app.route('/post/<id>', methods=['GET'])
-def get_post(id):
-    post = utils.get_post(id) or {}
+@app.route('/post/<post_id>', methods=['GET'])
+def get_post(post_id):
+    # FIX ME
+    post = utils.get_post(post_id) or {}
     post['body'] = markdown.markdown(post['body'])
-    comments = utils.get_comments(id) or []
+    comments = utils.get_comments(post_id) or []
     return render_template('post.html', post=post, comments=comments)
 
 
-@app.route('/post/<id>/comment', methods=['POST'])
+@app.route('/post/<post_id>/comment', methods=['POST'])
 @login_required
-def create_comment(id):
+def create_comment(post_id):
     """
-    :param id:
+    :param post_id:
     :return:
     """
     author = session['username']
     content = request.form['content']
-    utils.create_comment(id, author, content)
-    return redirect('/post/' + id)
+    utils.create_comment(post_id, author, content)
+    return redirect('/post/' + post_id)
 
 
 @app.route('/post/create', methods=['POST', 'GET'])
@@ -99,11 +100,11 @@ def login():
         password = request.form['password']
         stored_username, stored_password = utils.get_user_by_email(email)
 
-        if verify_password(stored_password, password):
+        if email and password and verify_password(stored_password, password):
             session['username'] = stored_username
             return redirect("/")
         else:
-            return render_template('login.html', message="login Failed")
+            return render_template('login.html', message="Login Failed")
     else:
         return render_template('login.html')
 
@@ -153,7 +154,6 @@ def update_post(post_id):
         return redirect(f"/post/{post_id}")
     else:
         return render_template('post_edit.html', post=post)
-
 
 
 @app.route('/logout')
